@@ -1,6 +1,6 @@
 from tokenizer import Tokenizer;
 
-code = "var \na;";
+code = "54.345 var  \na=5; andf=5\n\n\n\n 1 ";
 tok = Tokenizer(code);
 
 def doit(code):

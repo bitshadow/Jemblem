@@ -12,25 +12,25 @@ WHITESPACE_CHARS = atoh(chars(" \n\r\t"));
 
 class Tokenizer:
     def __init__(self, text):
-        self.rawtext = text;
-        self.pos = 0;
-        self.row = 0;
-        self.col = 0;
-        self.tokpos=0;
-        self.tokrow=0;
-        self.tokcol=0;
+        self._rawtext = text;
+        self._pos = 0;
+        self._row = 0;
+        self._col = 0;
+        self._tokpos=0;
+        self._tokrow=0;
+        self._tokcol=0;
 
     def getchar(self):
-        return self.rawtext[self.pos];
+        return self._rawtext[self._pos];
 
     def next(self):
         ch = self.getchar();
-        self.pos += 1;
+        self._pos += 1;
         if ch == '\n':
-            self.row += 1;
-            self.col = 0;
+            self._row += 1;
+            self._col = 0;
         else:
-            self.col+=1;
+            self._col+=1;
         return ch;
 
     def skip_whitespace(self):
@@ -38,9 +38,9 @@ class Tokenizer:
             self.next();
 
     def start_tok(self):
-        self.tokpos=self.pos;
-        self.tokrow=self.row;
-        self.tokcol=self.col;
+        self._tokpos=self._pos;
+        self._tokrow=self._row;
+        self._tokcol=self._col;
 
     def is_digit(self, ch):
         i = ord(ch);
@@ -58,10 +58,12 @@ class Tokenizer:
     def checkdigit(self, ch):
         return self.is_alphanumeric(ch) or ch=='.'  or ch=='-';
 
-    def read_num(self, checkdig):
-        tok = ""
-        while checkdig(self.getchar()):
+    def read_num(self, f):
+        tok = "";
+        ch = self.getchar()
+        while ch and f(ch):
             tok += self.next();
+            ch = self.getchar();
         return tok;
 
     def next_tok(self):
@@ -69,7 +71,9 @@ class Tokenizer:
         self.start_tok();
         ch = self.getchar();
         if self.is_digit(ch):
-           print self.read_num(self.checkdigit);
+           f = self.checkdigit;
+           return self.read_num(f);
+        return self._pos;
 
 """     j = 0;
         while j in xrange(len(self.rawtext)):

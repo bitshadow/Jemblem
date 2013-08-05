@@ -1,3 +1,5 @@
+import re;
+
 def atoh(a):
     ret = {};
     i=0;
@@ -9,6 +11,7 @@ def chars(s):
     return list(s);
 
 WHITESPACE_CHARS = atoh(chars(" \n\r\t"));
+RE_HEX_NUMBER = re.compile("/^0x[0-9a-f]+$/i");
 
 class Tokenizer:
     def __init__(self, text):
@@ -57,6 +60,10 @@ class Tokenizer:
 
     def checkdigit(self, ch):
         return self.is_alphanumeric(ch) or ch=='.'  or ch=='-';
+
+    def parse_js_number(self,num):
+        if re.match(RE_HEX_NUMBER, num):
+            print "hexadecimal"
 
     def read_num(self, f):
         tok = "";

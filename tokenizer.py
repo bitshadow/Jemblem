@@ -11,7 +11,10 @@ def chars(s):
     return list(s);
 
 WHITESPACE_CHARS = atoh(chars(" \n\r\t"));
-RE_HEX_NUMBER = re.compile("/^0x[0-9a-f]+$/i");
+RE_HEX_NUMBER = re.compile(r'^0[xX][0-9a-fA-F]+');
+RE_OCT_NUMBER = re.compile(r'^0[0-7]+');
+#RE_DEC_NUMBER = re.compile(r'^\d*\.?\d*(?:e-?\d*(?:\d\.?|\.?\d)\d*)?$');
+RE_DEC_NUMBER = re.compile('[-+]?\d*\.\d+|[-+]?\d+');
 
 class Tokenizer:
     def __init__(self, text):
@@ -62,8 +65,16 @@ class Tokenizer:
         return self.is_alphanumeric(ch) or ch=='.'  or ch=='-';
 
     def parse_js_number(self,num):
-        if re.match(RE_HEX_NUMBER, num):
-            print "hexadecimal"
+        hexa = re.match(RE_HEX_NUMBER,num);
+        octa = re.match(RE_OCT_NUMBER,num);
+        deci = re.match(RE_DEC_NUMBER,num);
+
+        if hexa:
+            return int(hexa.group(0)[2:], 16);
+        elif octa:
+            return int(octa.group(0)[1:], 8);
+        elif deci:
+            return float(deci.group(0));
 
     def read_num(self, f):
         tok = "";
@@ -71,7 +82,11 @@ class Tokenizer:
         while ch and f(ch):
             tok += self.next();
             ch = self.getchar();
-        return tok;
+        valid = self.parse_js_number(tok);
+        if valid != valid:
+            print "syntex error"
+        else:
+            return valid;
 
     def next_tok(self):
         self.skip_whitespace();

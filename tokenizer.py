@@ -11,10 +11,9 @@ def chars(s):
     return list(s);
 
 WHITESPACE_CHARS = atoh(chars(" \n\r\t"));
-RE_HEX_NUMBER = re.compile(r'^0[xX][0-9a-fA-F]+');
-RE_OCT_NUMBER = re.compile(r'^0[0-7]+');
-#RE_DEC_NUMBER = re.compile(r'^\d*\.?\d*(?:e-?\d*(?:\d\.?|\.?\d)\d*)?$');
-RE_DEC_NUMBER = re.compile('[-+]?\d*\.\d+|[-+]?\d+');
+RE_HEX_NUMBER = re.compile(r'^0[xX][0-9a-fA-F]+$');
+RE_OCT_NUMBER = re.compile(r'^0[0-7]+$');
+RE_DEC_NUMBER = re.compile(r'[-+]?\d*\.\d+|[-+]?\d+$');
 
 class Tokenizer:
     def __init__(self, text):
@@ -65,36 +64,66 @@ class Tokenizer:
         return self.is_alphanumeric(ch) or ch=='.'  or ch=='-';
 
     def parse_js_number(self,num):
-        hexa = re.match(RE_HEX_NUMBER,num);
-        octa = re.match(RE_OCT_NUMBER,num);
-        deci = re.match(RE_DEC_NUMBER,num);
+        hexa = re.search(RE_HEX_NUMBER,num);
+        octa = re.search(RE_OCT_NUMBER,num);
+        deci = re.search(RE_DEC_NUMBER,num);
 
         if hexa:
             return int(hexa.group(0)[2:], 16);
         elif octa:
             return int(octa.group(0)[1:], 8);
         elif deci:
-            return float(deci.group(0));
+            return int(deci.group(0));
 
-    def read_num(self, f):
+    def read_num(self, func):
         tok = "";
         ch = self.getchar()
-        while ch and f(ch):
+        while ch and func(ch):
             tok += self.next();
             ch = self.getchar();
         valid = self.parse_js_number(tok);
-        if valid != valid:
+        if valid == None:
             print "syntex error"
         else:
             return valid;
+
+    def read_escape_char():
+        ch = self.next();
+        d = {
+            "n":"\n",
+            "r":"\r",
+            "t":"\t",
+            "b":"\b",
+            "v":"\v",
+            "f":"\f",
+            "0":"\0"
+            #TODO \x and \u
+        }
+        if ch in d:
+            return d[ch];
+        return ch;
+
+    def read_string(self):
+        quote = self.next(); tok = "";
+        while True:
+            ch = self.next();
+            if ch == "\\":
+                ch = self.read_escape_char();
+            elif ch == quote:
+                break;
+            tok += ch;
+        return tok;
 
     def next_tok(self):
         self.skip_whitespace();
         self.start_tok();
         ch = self.getchar();
         if self.is_digit(ch):
-           f = self.checkdigit;
-           return self.read_num(f);
+           func = self.checkdigit;
+           return self.read_num(func);
+        if ch == '"' or ch == "'":
+           print self.read_string();
+
         return self._pos;
 
 """     j = 0;

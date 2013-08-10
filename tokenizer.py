@@ -87,6 +87,8 @@ class Tokenizer:
         else:
             return valid;
 
+    #   '\a' and '\v' may not show on the terminal
+    #   output depending on the device.
     def read_escape_char(self):
         ch = self.next();
         d = {
@@ -123,8 +125,7 @@ class Tokenizer:
         quote = self.next(); tok = "";
         while True:
             ch = self.next();
-            #Read escape character
-            #More details here http://mathiasbynens.be/notes/javascript-escapes
+            # see http://mathiasbynens.be/notes/javascript-escapes
             if ch == "\\":
                 ch = self.read_escape_char();
             elif ch == quote:
@@ -141,7 +142,7 @@ class Tokenizer:
            return self.read_num(func);
         if ch == '"' or ch == "'":
            return self.read_string();
-
+        #TODO handle ".","/",punctuations, operators, identifier
         return self._pos;
 
 """     j = 0;

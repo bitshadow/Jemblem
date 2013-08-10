@@ -1,6 +1,6 @@
 from tokenizer import Tokenizer;
 
-code = " 'hell\u0041io world!' 03432:w a .345 var  \na=5; andf=5\n\n\n\n 1 ";
+code = " 'hell world!' 03432:w a .345 var  \na=5; andf=5\n\n\n\n 1 ";
 tok = Tokenizer(code);
 
 def doit(code):

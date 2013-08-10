@@ -87,7 +87,7 @@ class Tokenizer:
         else:
             return valid;
 
-    def read_escape_char():
+    def read_escape_char(self):
         ch = self.next();
         d = {
             "n":"\n",
@@ -96,17 +96,35 @@ class Tokenizer:
             "b":"\b",
             "v":"\v",
             "f":"\f",
-            "0":"\0"
-            #TODO \x and \u
+            "0":"\0",
         }
         if ch in d:
             return d[ch];
+        elif ch == "x":
+            return unichr(self.hex_bytes(2));
+        elif ch == "u":
+            return unichr(self.hex_bytes(4));
         return ch;
 
+    #read next 2 bytes if hexadecimal escape sequence
+    #read next 4 bytes if unicode escape sequence
+    def hex_bytes(self,n):
+        num = 0;
+        while n>0:
+            n -= 1;
+            c = int(self.next(), 16);
+            if c is None:
+                print "invalid escape sequence"
+            num = (num << 4) | c;
+        return num;
+
+    #start reading string having quotes
     def read_string(self):
         quote = self.next(); tok = "";
         while True:
             ch = self.next();
+            #Read escape character
+            #More details here http://mathiasbynens.be/notes/javascript-escapes
             if ch == "\\":
                 ch = self.read_escape_char();
             elif ch == quote:
@@ -122,7 +140,7 @@ class Tokenizer:
            func = self.checkdigit;
            return self.read_num(func);
         if ch == '"' or ch == "'":
-           print self.read_string();
+           return self.read_string();
 
         return self._pos;
 

@@ -11,6 +11,89 @@ def chars(s):
     return list(s);
 
 WHITESPACE_CHARS = atoh(chars(" \n\r\t"));
+KEYWORDS = atoh([
+        "break",
+        "case",
+        "catch",
+        "continue",
+        "default",
+        "delete",
+        "do",
+        "else",
+        "finally",
+        "for",
+        "function",
+        "if",
+        "in",
+        "instanceof",
+        "new",
+        "return",
+        "switch",
+        "throw",
+        "try",
+        "typeof",
+        "var",
+        "void",
+        "while",
+        "with",
+        "NaN"
+]);
+KEYWORDS_ATOM = atoh([
+        "false",
+        "null",
+        "true",
+        "undefined",
+        "NaN"
+]);
+OPERATORS = atoh([
+        "in",
+        "instanceof",
+        "typeof",
+        "new",
+        "void",
+        "delete",
+        "++",
+        "--",
+        "+",
+        "-",
+        "!",
+        "~",
+        "&",
+        "|",
+        "^",
+        "*",
+        "/",
+        "%",
+        ">>",
+        "<<",
+        ">>>",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "==",
+        "===",
+        "!=",
+        "!==",
+        "?",
+        "=",
+        "+=",
+        "-=",
+        "/=",
+        "*=",
+        "%=",
+        ">>=",
+        "<<=",
+        ">>>=",
+        "~=",
+        "%=",
+        "|=",
+        "^=",
+        "&&",
+        "||"
+]);
+
+
 RE_HEX_NUMBER = re.compile(r'^0[xX][0-9a-fA-F]+$');
 RE_OCT_NUMBER = re.compile(r'^0[0-7]+$');
 RE_DEC_NUMBER = re.compile(r'[-+]?\d*\.\d+|[-+]?\d+$');
@@ -75,7 +158,7 @@ class Tokenizer:
         elif deci:
             return int(deci.group(0));
 
-    def read_num(self, func):
+    def read_num(self, prefix, func):
         tok = "";
         ch = self.getchar()
         while ch and func(ch):
@@ -133,15 +216,34 @@ class Tokenizer:
             tok += ch;
         return tok;
 
+    #identifier can only include alphanumeric chars, $ and _.
+    def is_identifier(self, ch):
+        return self.is_alphanumeric(ch) or ch == '$' or ch == '_';
+
+    def read_word(self, func):
+        word = "";
+        ch = self.getchar()
+        while ch and func(ch):
+            word += self.next();
+            ch = self.getchar();
+        #put check for keywords, operators, keywords atom
+        return word;
+
     def next_tok(self):
         self.skip_whitespace();
         self.start_tok();
         ch = self.getchar();
         if self.is_digit(ch):
-           func = self.checkdigit;
-           return self.read_num(func);
+            func = self.checkdigit;
+            return self.read_num(func);
+
         if ch == '"' or ch == "'":
-           return self.read_string();
+            return self.read_string();
+
+        if self.is_identifier(ch):
+            func = self.is_identifier;
+            return self.read_word(func);
+
         #TODO handle ".","/",punctuations, operators, identifier
         return self._pos;
 

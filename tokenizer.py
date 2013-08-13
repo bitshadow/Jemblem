@@ -229,6 +229,17 @@ class Tokenizer:
         #put check for keywords, operators, keywords atom
         return word;
 
+    def token(self, typ, value): 
+        tok = {
+            'type'  : typ,
+            'value' : value,
+            'row'   : self._tokrow,
+            'col'   : self._tokcol,
+            'pos'   : self._tokpos,
+            #nlb   : S.newline_before
+        };
+        return tok;
+
     def next_tok(self):
         self.skip_whitespace();
         self.start_tok();

@@ -5,6 +5,9 @@ tok = Tokenizer(code);
 
 def doit(code):
     print tok.next_tok();
+    print tok.next_tok();
+    print tok.next_tok();
+    print tok.next_tok();
 
 if __name__ == '__main__':
     doit(code);

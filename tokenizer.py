@@ -226,6 +226,13 @@ class Tokenizer:
         while ch and func(ch):
             word += self.next();
             ch = self.getchar();
+        if word in KEYWORDS:
+            return self.token("keyword", word)
+        elif word in OPERATORS:
+            return self.token("operator", word)
+        elif word in KEYWORDS_ATOM:
+            return self.token("atom", word)
+
         #put check for keywords, operators, keywords atom
         return word;
 

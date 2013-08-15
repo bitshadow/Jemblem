@@ -164,6 +164,8 @@ class Tokenizer:
         while ch and func(ch):
             tok += self.next();
             ch = self.getchar();
+        if prefix:
+            tok = prefix + tok;
         valid = self.parse_js_number(tok);
         if valid == None:
             print "syntex error"

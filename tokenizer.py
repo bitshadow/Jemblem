@@ -156,9 +156,10 @@ class Tokenizer:
         elif octa:
             return int(octa.group(0)[1:], 8);
         elif deci:
-            return int(deci.group(0));
+            num = deci.group(0);
+            return float(num) if '.' in num else int(num);
 
-    def read_num(self, prefix, func):
+    def read_num(self, func, prefix=None):
         tok = "";
         ch = self.getchar()
         while ch and func(ch):
@@ -170,7 +171,7 @@ class Tokenizer:
         if valid == None:
             print "syntex error"
         else:
-            return valid;
+            return self.token("num", valid);
 
     #   '\a' and '\v' may not show on the terminal
     #   output depending on the device.
@@ -216,7 +217,7 @@ class Tokenizer:
             elif ch == quote:
                 break;
             tok += ch;
-        return tok;
+        return self.token("string", tok);
 
     #identifier can only include alphanumeric chars, $ and _.
     def is_identifier(self, ch):
@@ -236,7 +237,7 @@ class Tokenizer:
             return self.token("atom", word)
 
         #put check for keywords, operators, keywords atom
-        return word;
+        return self.token("name", word);
 
     def token(self, typ, value): 
         tok = {
@@ -248,6 +249,15 @@ class Tokenizer:
             #nlb   : S.newline_before
         };
         return tok;
+
+    def handle_dot(self):
+        self.next();
+        ch = self.getchar();
+        if self.is_digit(ch):
+            func = self.checkdigit;
+            return self.read_num(self.checkdigit, ch);
+        else:
+            return self.token("punc", ch);
 
     def next_tok(self):
         self.skip_whitespace();
@@ -264,7 +274,10 @@ class Tokenizer:
             func = self.is_identifier;
             return self.read_word(func);
 
-        #TODO handle ".","/",punctuations, operators, identifier
+        if ch  == '.':
+            self.handle_dot();
+
+        #TODO handle "/",punctuations, operators, identifier
         return self._pos;
 
 """     j = 0;

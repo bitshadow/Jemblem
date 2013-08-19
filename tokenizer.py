@@ -93,7 +93,7 @@ OPERATORS = atoh([
         "||"
 ]);
 
-
+PUNC_CHARS = atoh(chars("[]{}(),.;:"));
 RE_HEX_NUMBER = re.compile(r'^0[xX][0-9a-fA-F]+$');
 RE_OCT_NUMBER = re.compile(r'^0[0-7]+$');
 RE_DEC_NUMBER = re.compile(r'[-+]?\d*\.\d+|[-+]?\d+$');
@@ -237,7 +237,7 @@ class Tokenizer:
             return self.token("atom", word)
 
         #put check for keywords, operators, keywords atom
-        return self.token("name", word);
+        return self.token("ident", word);
 
     def token(self, typ, value): 
         tok = {
@@ -246,18 +246,38 @@ class Tokenizer:
             'row'   : self._tokrow,
             'col'   : self._tokcol,
             'pos'   : self._tokpos,
-            #nlb   : S.newline_before
         };
         return tok;
 
     def handle_dot(self):
-        self.next();
         ch = self.getchar();
-        if self.is_digit(ch):
+        self.next();
+        if self.is_digit(self.getchar()):
             func = self.checkdigit;
             return self.read_num(self.checkdigit, ch);
         else:
             return self.token("punc", ch);
+
+    def find(self, what):
+        return self._rawtext.index(what, self._pos);
+
+    def read_single_line_comment(self,):
+        self.next()
+        p = self.find('\n');
+        comment = "";
+        if p == -1:
+            comment = self._rawtext[self._pos:];
+        else:
+            comment = self._rawtext[self._pos:p];
+        return self.token("slcomment", comment);
+
+    def handle_slash(self):
+        self.next();
+        ch = self.getchar();
+        if ch == "/":
+           return self.read_single_line_comment();
+        if ch == "*":
+           return "we will see";
 
     def next_tok(self):
         self.skip_whitespace();
@@ -275,9 +295,15 @@ class Tokenizer:
             return self.read_word(func);
 
         if ch  == '.':
-            self.handle_dot();
+            return self.handle_dot();
 
-        #TODO handle "/",punctuations, operators, identifier
+        if ch in PUNC_CHARS:
+            return self.token("punc", self.next());
+
+        if ch == '/':
+            return self.handle_slash();
+        
+        #TODO handle "/", operators, identifier
         return self._pos;
 
 """     j = 0;

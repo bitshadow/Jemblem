@@ -1,3 +1,7 @@
+#
+# written By: Jignesh Kakadiya
+#
+
 import re;
 
 def atoh(a):
@@ -261,7 +265,7 @@ class Tokenizer:
     def find(self, what):
         return self._rawtext.index(what, self._pos);
 
-    def read_single_line_comment(self,):
+    def read_single_line_comment(self):
         self.next()
         p = self.find('\n');
         comment = "";
@@ -271,13 +275,25 @@ class Tokenizer:
             comment = self._rawtext[self._pos:p];
         return self.token("slcomment", comment);
 
+    def read_multi_line_comment(self):
+        self.next();
+        p = self.find("*/");
+        print p;
+        if p == -1:
+            print "syntex error";
+            return;
+        comment = self._rawtext[self._pos:p];
+        self._pos = p + 2;
+        return self.token("mlcomment", comment);
+
+
     def handle_slash(self):
         self.next();
         ch = self.getchar();
         if ch == "/":
            return self.read_single_line_comment();
         if ch == "*":
-           return "we will see";
+           return self.read_multi_line_comment();
 
     def next_tok(self):
         self.skip_whitespace();
@@ -302,8 +318,8 @@ class Tokenizer:
 
         if ch == '/':
             return self.handle_slash();
-        
-        #TODO handle "/", operators, identifier
+
+        #TODO handle "/", operators
         return self._pos;
 
 """     j = 0;

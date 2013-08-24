@@ -103,6 +103,8 @@ RE_OCT_NUMBER = re.compile(r'^0[0-7]+$');
 RE_DEC_NUMBER = re.compile(r'[-+]?\d*\.\d+|[-+]?\d+$');
 
 class Tokenizer:
+
+
     def __init__(self, text):
         self._rawtext = text;
         self._pos = 0;
@@ -112,8 +114,10 @@ class Tokenizer:
         self._tokrow=0;
         self._tokcol=0;
 
+
     def getchar(self):
         return self._rawtext[self._pos];
+
 
     def next(self):
         ch = self.getchar();
@@ -125,14 +129,17 @@ class Tokenizer:
             self._col+=1;
         return ch;
 
+
     def skip_whitespace(self):
         while self.getchar() in WHITESPACE_CHARS:
             self.next();
+
 
     def start_tok(self):
         self._tokpos=self._pos;
         self._tokrow=self._row;
         self._tokcol=self._col;
+
 
     def is_digit(self, ch):
         i = ord(ch);
@@ -140,15 +147,19 @@ class Tokenizer:
             return True;
         return False;
 
+
     def is_in_alphabet(self, ch):
         i = ord(ch);
         return (i >= 65 and i <= 90) or (i >= 97 and i <= 122)
 
+
     def is_alphanumeric(self, ch):
         return self.is_digit(ch) or self.is_in_alphabet(ch);
 
+
     def checkdigit(self, ch):
         return self.is_alphanumeric(ch) or ch=='.'  or ch=='-';
+
 
     def parse_js_number(self,num):
         hexa = re.search(RE_HEX_NUMBER,num);
@@ -163,6 +174,7 @@ class Tokenizer:
             num = deci.group(0);
             return float(num) if '.' in num else int(num);
 
+
     def read_num(self, func, prefix=None):
         tok = "";
         ch = self.getchar()
@@ -176,6 +188,7 @@ class Tokenizer:
             print "syntex error"
         else:
             return self.token("num", valid);
+
 
     #   '\a' and '\v' may not show on the terminal
     #   output depending on the device.
@@ -198,6 +211,7 @@ class Tokenizer:
             return unichr(self.hex_bytes(4));
         return ch;
 
+
     #read next 2 bytes if hexadecimal escape sequence
     #read next 4 bytes if unicode escape sequence
     def hex_bytes(self,n):
@@ -209,6 +223,7 @@ class Tokenizer:
                 print "invalid escape sequence"
             num = (num << 4) | c;
         return num;
+
 
     #start reading string having quotes
     def read_string(self):
@@ -223,9 +238,11 @@ class Tokenizer:
             tok += ch;
         return self.token("string", tok);
 
+
     #identifier can only include alphanumeric chars, $ and _.
     def is_identifier(self, ch):
         return self.is_alphanumeric(ch) or ch == '$' or ch == '_';
+
 
     def read_word(self, func):
         word = "";
@@ -243,6 +260,7 @@ class Tokenizer:
         #put check for keywords, operators, keywords atom
         return self.token("ident", word);
 
+
     def token(self, typ, value): 
         tok = {
             'type'  : typ,
@@ -253,6 +271,7 @@ class Tokenizer:
         };
         return tok;
 
+
     def handle_dot(self):
         ch = self.getchar();
         self.next();
@@ -262,8 +281,10 @@ class Tokenizer:
         else:
             return self.token("punc", ch);
 
+
     def find(self, what):
         return self._rawtext.find(what, self._pos)
+
 
     def read_single_line_comment(self):
         self.next()
@@ -274,6 +295,7 @@ class Tokenizer:
         else:
             comment = self._rawtext[self._pos:p];
         return self.token("slcomment", comment);
+
 
     def read_multi_line_comment(self):
         self.next();
@@ -293,6 +315,7 @@ class Tokenizer:
            return self.read_single_line_comment();
         if ch == "*":
            return self.read_multi_line_comment();
+
 
     def handle_eof(self, eof_desc, func):
         try:

@@ -263,7 +263,7 @@ class Tokenizer:
             return self.token("punc", ch);
 
     def find(self, what):
-        return self._rawtext.index(what, self._pos);
+        return self._rawtext.find(what, self._pos)
 
     def read_single_line_comment(self):
         self.next()
@@ -278,9 +278,8 @@ class Tokenizer:
     def read_multi_line_comment(self):
         self.next();
         p = self.find("*/");
-        print p;
         if p == -1:
-            print "syntex error";
+            print "comment not terminated";
             return;
         comment = self._rawtext[self._pos:p];
         self._pos = p + 2;
@@ -294,6 +293,15 @@ class Tokenizer:
            return self.read_single_line_comment();
         if ch == "*":
            return self.read_multi_line_comment();
+
+    def handle_eof(self, eof_desc, func):
+        try:
+            func()
+        except Exception:
+            print "some thing's wrong with your syntex"
+        finally:
+            print "Goodbye!"
+
 
     def next_tok(self):
         self.skip_whitespace();

@@ -3,6 +3,7 @@
 #
 
 import re;
+from sys import exit
 
 def atoh(a):
     ret = {};
@@ -113,7 +114,7 @@ class Tokenizer:
         self._tokpos=0;
         self._tokrow=0;
         self._tokcol=0;
-
+        self._regex_allowed = False;
 
     def getchar(self):
         return self._rawtext[self._pos];
@@ -229,7 +230,12 @@ class Tokenizer:
     def read_string(self):
         quote = self.next(); tok = "";
         while True:
-            ch = self.next();
+            try:
+                ch = self.next();
+            except Exception:
+                #TODO proper Error handling
+                exit("string not terminated. exiting..");
+                break;
             # see http://mathiasbynens.be/notes/javascript-escapes
             if ch == "\\":
                 ch = self.read_escape_char();
@@ -261,7 +267,11 @@ class Tokenizer:
         return self.token("ident", word);
 
 
-    def token(self, typ, value): 
+    def token(self, typ, value):
+        self._regex_allowed = (type == "operator" or
+                              (type == "keyword" and value in KEYWORDS_BEFORE_EXPRESSION) or
+                              (type == "punc" and value in PUNC_BEFORE_EXPRESSION));
+
         tok = {
             'type'  : typ,
             'value' : value,
@@ -316,15 +326,22 @@ class Tokenizer:
         if ch == "*":
            return self.read_multi_line_comment();
 
+        return  self.read_regex() if self._regex_allowed else self.read_operator()
+
+
+    def read_regex(self):
+        return  "regex"
+
+    def read_operator(self):
+        return "operator"
 
     def handle_eof(self, eof_desc, func):
         try:
-            func()
+            return func()
         except Exception:
-            print "some thing's wrong with your syntex"
-        finally:
-            print "Goodbye!"
-
+            print eof_desc
+        except IndexError:
+            print "unterminated string or comment"
 
     def next_tok(self):
         self.skip_whitespace();
@@ -335,7 +352,7 @@ class Tokenizer:
             return self.read_num(func);
 
         if ch == '"' or ch == "'":
-            return self.read_string();
+            return self.read_string()
 
         if self.is_identifier(ch):
             func = self.is_identifier;
@@ -351,7 +368,8 @@ class Tokenizer:
             return self.handle_slash();
 
         #TODO handle "/", operators
-        return self._pos;
+        print "character is not handled yet";
+        return self._pos 
 
 """     j = 0;
         while j in xrange(len(self.rawtext)):

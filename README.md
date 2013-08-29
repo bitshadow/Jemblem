@@ -1,4 +1,4 @@
 == wip == 
-In Progress: Tokenizer
-TODO : parser
-TODO : generator
+- In Progress: Tokenizer
+- TODO : parser
+- TODO : generator
